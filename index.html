@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Excel業務自動化・効率化 | ポートフォリオ</title>
+<style>
+  :root {
+    --navy: #1b2a4a;
+    --blue: #2f6fed;
+    --bg: #f7f9fc;
+    --text: #22293b;
+    --muted: #5b6478;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.8;
+  }
+  header {
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    color: #fff;
+    padding: 64px 20px 56px;
+    text-align: center;
+  }
+  header h1 {
+    font-size: 1.9rem;
+    margin: 0 0 16px;
+  }
+  header p {
+    font-size: 1.05rem;
+    opacity: 0.92;
+    max-width: 560px;
+    margin: 0 auto 28px;
+  }
+  .btn {
+    display: inline-block;
+    background: #fff;
+    color: var(--blue);
+    padding: 12px 28px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 700;
+    margin: 6px;
+  }
+  .btn.secondary {
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.7);
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 36px 28px;
+    margin: -32px 0 28px;
+    box-shadow: 0 6px 24px rgba(20, 30, 60, 0.06);
+    position: relative;
+  }
+  section:first-of-type { margin-top: -40px; }
+  h2 {
+    font-size: 1.25rem;
+    color: var(--navy);
+    margin-top: 0;
+    border-left: 4px solid var(--blue);
+    padding-left: 12px;
+  }
+  ul { padding-left: 1.3em; color: var(--text); }
+  li { margin-bottom: 6px; }
+  .examples {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .examples div {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 0.92rem;
+    text-align: center;
+    color: var(--navy);
+    font-weight: 600;
+  }
+  .note {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .cta {
+    text-align: center;
+    padding: 40px 20px 60px;
+  }
+  .cta a { margin: 6px; }
+  .cta .btn { background: var(--blue); color: #fff; }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 24px 20px 48px;
+  }
+  @media (max-width: 480px) {
+    header h1 { font-size: 1.5rem; }
+    section { padding: 28px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>面倒なExcel作業、まとめて自動化します</h1>
+  <p>CSV結合・転記・集計・帳票作成…毎月・毎週繰り返す手作業を、ボタン一つで終わらせませんか？</p>
+  <a class="btn" href="https://coconala.com/services/4391639">ご相談・お見積り（ココナラ）</a>
+  <a class="btn secondary" href="https://github.com/mbalsqwe-lab/excel-vba-automation-samples">動作サンプルを見る（GitHub）</a>
+</header>
+
+<main>
+
+<section>
+  <h2>こんな作業でお困りではありませんか？</h2>
+  <ul>
+    <li>複数ファイルのデータを毎回手作業で結合している</li>
+    <li>決まったフォーマットへの転記に時間がかかっている</li>
+    <li>月次・週次の集計作業が負担になっている</li>
+    <li>帳票・レポート作成を毎回イチから作っている</li>
+  </ul>
+  <p>そのお悩み、Excel自動化で解決できます。</p>
+</section>
+
+<section>
+  <h2>サービス内容</h2>
+  <p><strong>Excel業務自動化・効率化</strong></p>
+  <p>VBAを中心に、日々のExcel作業を自動化します。<br>
+  「マクロが書ける人」ではなく「あなたの面倒な作業を楽にする人」として、実際の業務フローに合わせて対応します。</p>
+  <div class="examples">
+    <div>CSV結合・データ統合</div>
+    <div>データ整形・転記作業</div>
+    <div>月次/週次の集計自動化</div>
+    <div>帳票・レポートの自動作成</div>
+  </div>
+</section>
+
+<section>
+  <h2>実績・サンプル</h2>
+  <p>まだ受注実績はありませんが、実際に動作するサンプルコードをGitHubで公開しています。<br>
+  どのような自動化ができるか、ご依頼前にご確認いただけます。</p>
+  <p><a class="btn secondary" style="color:var(--blue); border-color:var(--blue);" href="https://github.com/mbalsqwe-lab/excel-vba-automation-samples">GitHubのサンプルを見る →</a></p>
+</section>
+
+<section>
+  <h2>料金・ご相談の流れ</h2>
+  <p>料金はサービス内容により異なります。最新の価格・プランはココナラのサービスページでご確認ください。</p>
+  <p><strong>進め方</strong></p>
+  <ul>
+    <li>現状の作業内容と完成イメージをヒアリング</li>
+    <li>無理のない範囲でマクロを作成</li>
+    <li>納品・動作確認（修正1回込み）</li>
+  </ul>
+</section>
+
+<section>
+  <h2>プロフィール</h2>
+  <p>IT/プログラミングのスキルを活かし、Excel業務の自動化を専門に活動しています。<br>
+  日々の「面倒だけど誰かがやらなきゃいけない作業」を、テクノロジーの力で楽にすることを目指しています。</p>
+</section>
+
+</main>
+
+<div class="cta">
+  <a class="btn" href="https://coconala.com/services/4391639">ココナラで相談する</a>
+</div>
+
+<footer>
+  Excel業務自動化・効率化サービス ポートフォリオ
+</footer>
+
+</body>
+</html>
