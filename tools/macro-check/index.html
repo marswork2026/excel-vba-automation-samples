@@ -87,6 +87,7 @@ textarea{width:100%;min-height:260px;border:1px solid var(--line);border-radius:
   <section class="card cta">
     <strong>「どこを直せばいいかはわかったけど、自分では直せない」</strong>
     <p>動かなくなったマクロの原因調べと修正をお引き受けしています。<br>
+    <strong>原因調べは無料。修正は3,000円（税抜）から、最短当日でお返しします。</strong><br>
     <a href="https://coconala.com/services/4412438" target="_blank" rel="noopener">動かないExcelマクロの修正（ココナラ）</a>　／
     <a href="https://coconala.com/users/6110760" target="_blank" rel="noopener">ほかのサービス・ご相談</a></p>
   </section>
@@ -324,6 +325,10 @@ textarea{width:100%;min-height:260px;border:1px solid var(--line);border-radius:
       t += "■[" + LV[f.level] + "] " + f.title + "（" + f.lines.length + "か所）\r\n" + f.why + "\r\n直し方：" + f.fix + "\r\n";
       t += "該当：" + f.lines.map(l => l.no + "行目").join("、") + "\r\n\r\n";
     }
+    t += "――――――――――――――――\r\n";
+    t += "この結果は「マクロ健康診断」で作成しました（無料・登録不要・コードは送信されません）\r\n";
+    t += "https://marswork2026.github.io/excel-vba-automation-samples/tools/macro-check/\r\n";
+    t += "直し方のご相談（原因調べは無料）：https://coconala.com/services/4412438\r\n";
     return t;
   }
   function save(){
