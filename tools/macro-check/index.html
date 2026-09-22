@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>マクロ健康診断｜mars works</title>
+<meta name="description" content="Excelマクロ（VBA）のコードを貼り付けるだけで、シート番号の決め打ち・保存場所の直書きなど、壊れやすい書き方を見つける無料ツール。コードはブラウザの中だけで調べ、どこにも送信しません。">
+<style>
+:root{--bg:#F7F4EE;--card:#FFFFFF;--ink:#2F3A34;--sub:#6B726D;--line:#DDD6CA;--green:#1E7B4B;--green-soft:#E6F2EA;--red:#C94A43;--code:#23272E}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#1C1F1D;--card:#262A27;--ink:#E8EAE8;--sub:#A5ACA7;--line:#3A403C;--green:#5CC08B;--green-soft:#23352B;--red:#E07A73}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;line-height:1.7}
+main{max-width:860px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:1.7rem;margin:.2em 0 .1em}
+.lead{color:var(--sub);margin:0 0 20px}
+.badge{display:inline-block;background:var(--green-soft);color:var(--green);font-weight:700;border-radius:999px;padding:2px 12px;font-size:.85rem;margin-right:6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:16px 0}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:28px 16px;text-align:center;cursor:pointer;transition:.15s}
+.drop.over{border-color:var(--green);background:var(--green-soft)}
+.drop strong{display:block;font-size:1.1rem}
+.btn{display:inline-block;border:0;border-radius:10px;padding:12px 20px;font-size:1rem;font-weight:700;cursor:pointer;background:var(--green);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.sub{background:transparent;color:var(--ink);border:1px solid var(--line)}
+label.opt{display:flex;gap:10px;align-items:flex-start;margin:8px 0}
+label.opt input{margin-top:6px}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:4px 8px;text-align:left;white-space:nowrap}
+th{background:var(--green-soft)}
+.scroll{overflow-x:auto;max-width:100%}
+.files li{margin:2px 0}
+.muted{color:var(--sub);font-size:.9rem}
+.err{color:var(--red)}
+.cta{background:var(--green-soft);border-color:transparent}
+.cta a{color:var(--green);font-weight:700}
+footer{color:var(--sub);font-size:.85rem;text-align:center;margin-top:32px}
+footer a{color:var(--sub)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+textarea{width:100%;min-height:260px;border:1px solid var(--line);border-radius:12px;padding:12px;font:14px/1.5 Consolas,"DejaVu Sans Mono",monospace;background:var(--bg);color:var(--ink);resize:vertical}
+.grade{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.grade .g{font-size:2.6rem;font-weight:800;width:72px;height:72px;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff}
+.gA{background:var(--green)}.gB{background:#B7852A}.gC{background:#D2693C}.gD{background:var(--red)}
+.counts span{display:inline-block;margin-right:10px;font-weight:700}
+.lv{display:inline-block;border-radius:6px;padding:0 8px;font-size:.8rem;font-weight:700;color:#fff;margin-right:6px;vertical-align:1px}
+.lv.high{background:var(--red)}.lv.mid{background:#B7852A}.lv.low{background:#7A827D}
+.f{border-top:1px solid var(--line);padding:14px 0}
+.f:first-child{border-top:0}
+.f h3{font-size:1.05rem;margin:0 0 4px}
+.f p{margin:4px 0}
+.hits{margin:6px 0 0;padding:0;list-style:none}
+.hits li{font:13px/1.5 Consolas,"DejaVu Sans Mono",monospace;background:var(--bg);border-radius:8px;padding:4px 8px;margin:4px 0;overflow-x:auto;white-space:pre}
+.hits b{color:var(--sub);font-weight:400;margin-right:8px}
+.fix{background:var(--green-soft);border-radius:10px;padding:8px 12px}
+</style>
+</head>
+<body>
+<main>
+  <p><span class="badge">無料</span><span class="badge">登録不要</span><span class="badge">送信なし</span></p>
+  <h1>マクロ健康診断</h1>
+  <p class="lead">Excelマクロ（VBA）のコードを貼り付けると、「シートを1枚足したら止まった」「フォルダを移したら動かない」の原因になりやすい書き方を見つけて、直し方を案内します。</p>
+
+  <section class="card">
+    <strong>1. マクロのコードを貼り付ける</strong>
+    <p class="muted" style="margin:4px 0 10px">Excelで <b>Alt＋F11</b> → 左の「標準モジュール」の中の Module をダブルクリック → コードを全部選んで（Ctrl＋A）コピー（Ctrl＋C）→ 下に貼り付け（Ctrl＋V）。<br>書き出したファイル（.bas・.cls・.frm・.txt）を選ぶこともできます。</p>
+    <textarea id="code" spellcheck="false" placeholder="ここにVBAのコードを貼り付けてください（Sub 〜 End Sub）"></textarea>
+    <div class="row" style="margin-top:12px">
+      <button id="run" class="btn" disabled>診断する</button>
+      <button id="pick" class="btn sub">ファイルを選ぶ</button>
+      <button id="sample" class="btn sub">見本のマクロで試す</button>
+      <button id="clear" class="btn sub" disabled>消す</button>
+      <input id="file" type="file" accept=".bas,.cls,.frm,.txt,.vb" hidden>
+    </div>
+    <p id="msg" class="muted"></p>
+  </section>
+
+  <section id="result" class="card" hidden>
+    <strong>2. 診断結果</strong>
+    <div class="grade" style="margin:12px 0">
+      <div id="grade" class="g"></div>
+      <div><div id="gradeText" style="font-weight:700"></div><div id="counts" class="counts muted"></div></div>
+    </div>
+    <div id="findings"></div>
+    <div class="row" style="margin-top:12px"><button id="save" class="btn sub">結果をテキストで保存</button></div>
+    <p class="muted">※書き方のパターンから自動で見つけたものです。実際に止まるかどうかは、お使いのファイルやデータによって変わります。「直した方がよい書き方」の目安としてお使いください。</p>
+  </section>
+
+  <section class="card cta">
+    <strong>「どこを直せばいいかはわかったけど、自分では直せない」</strong>
+    <p>動かなくなったマクロの原因調べと修正をお引き受けしています。<br>
+    <a href="https://coconala.com/services/4412438" target="_blank" rel="noopener">動かないExcelマクロの修正（ココナラ）</a>　／
+    <a href="https://coconala.com/users/6110760" target="_blank" rel="noopener">ほかのサービス・ご相談</a></p>
+  </section>
+
+  <section class="card">
+    <strong>安心して使えるように</strong>
+    <ul class="muted">
+      <li>貼り付けたコードはお使いのブラウザの中だけで調べます。インターネット上のどこにも送信・保存しません。</li>
+      <li>ページを閉じると、貼り付けた内容はすべて消えます。</li>
+      <li>コードにパスワードや社内のサーバー名が入っている場合は、ほかの人に見せる前に消しておくと安心です（この診断でも見つけます）。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>© mars works ／ <a href="../csv-merge/">CSVまとめツール</a> ／ <a href="https://github.com/marswork2026/excel-vba-automation-samples" target="_blank" rel="noopener">Excel VBAのサンプル</a> ／ <a href="https://www.instagram.com/marswork2026/" target="_blank" rel="noopener">Instagram</a> ／ <a href="https://x.com/marswork2026" target="_blank" rel="noopener">X</a></p>
+  </footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const LV = {high: "要注意", mid: "注意", low: "参考"};
+
+  // ---- 文字コード（VBEで書き出した.basはShift_JIS） ----
+  function decode(buf){
+    const b = new Uint8Array(buf);
+    if (b.length >= 3 && b[0] === 0xEF && b[1] === 0xBB && b[2] === 0xBF) return new TextDecoder("utf-8").decode(b.subarray(3));
+    try { return new TextDecoder("utf-8", {fatal: true}).decode(b); }
+    catch (e) { return new TextDecoder("shift_jis").decode(b); }
+  }
+
+  // ---- 1行を「コメント」「文字列」に分ける ----
+  function splitLine(s){
+    let bare = "", strs = [], cur = "", inStr = false, comment = "";
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (inStr) {
+        if (c === '"') { if (s[i+1] === '"') { cur += '"'; i++; continue; } inStr = false; strs.push(cur); bare += '""'; cur = ""; continue; }
+        cur += c; continue;
+      }
+      if (c === '"') { inStr = true; continue; }
+      if (c === "'") { comment = s.slice(i); break; }
+      bare += c;
+    }
+    if (inStr) { strs.push(cur); bare += '""'; }
+    if (/^\s*Rem(\s|$)/i.test(bare)) { comment = s; bare = ""; strs = []; }
+    return {bare, strs, comment};
+  }
+
+  // ---- 論理行（行継続 " _" をつなぐ）と、Sub/Functionの範囲 ----
+  function prepare(text){
+    let raw = text.replace(/\r\n|\r/g, "\n").split("\n");
+    // .frm の見た目の定義部分（VERSION 〜 Attribute VB_Name の前）を飛ばす
+    let start = 0;
+    if (/^\s*VERSION\s/i.test(raw[0] || "")) { const k = raw.findIndex(l => /^Attribute\s+VB_Name/i.test(l)); if (k >= 0) start = k; }
+    const lines = [];
+    for (let i = start; i < raw.length; i++) {
+      const no = i + 1; let t = raw[i];
+      if (/^Attribute\s+VB_/i.test(t)) continue;
+      let p = splitLine(t);
+      let text2 = t;
+      while (/(^|\s)_\s*$/.test(p.bare) && i + 1 < raw.length) {
+        i++; const q = splitLine(raw[i]);
+        p = {bare: p.bare.replace(/_\s*$/, " ") + q.bare, strs: p.strs.concat(q.strs), comment: p.comment || q.comment};
+        text2 += "\n" + raw[i];
+      }
+      lines.push({no, text: text2, bare: p.bare, strs: p.strs});
+    }
+    const procs = []; let cur = null;
+    for (const L of lines) {
+      const m = L.bare.match(/^\s*(?:(?:Public|Private|Friend)\s+)?(?:Static\s+)?(Sub|Function|Property\s+(?:Get|Let|Set))\s+([\w\u3040-\u30ff\u4e00-\u9fff]+)/i);
+      if (m && !/^\s*(?:(?:Public|Private)\s+)?Declare\b/i.test(L.bare)) { cur = {name: m[2], start: L.no, lines: [L]}; procs.push(cur); continue; }
+      if (cur) { cur.lines.push(L); if (/^\s*End\s+(Sub|Function|Property)\b/i.test(L.bare)) { cur.end = L.no; cur = null; } }
+    }
+    const procOf = new Map(); for (const P of procs) for (const L of P.lines) procOf.set(L, P);
+    return {lines, procs, procOf, rawCount: raw.length};
+  }
+
+  // ---- 診断ルール ----
+  // test(L): その行が当てはまるか（true / false）。procTest(proc): Sub/Function単位で調べる。whole(ctx): 全体で1回
+  const RULES = [
+    {id: "sheet-index", level: "high", title: "シートを番号で指定している",
+     why: "Worksheets(1) のような番号は「左から何枚目か」です。シートを1枚足したり並べ替えたりすると、別のシートを読み書きしてしまいます（CSVを開いた直後など、シートが1枚だけのブックは除いて調べています）。",
+     fix: "シート名で指定します。例：Worksheets(1) → Worksheets(\"売上\")。全部のシートを順に処理したいときは For Each ws In Worksheets を使い、シート名で対象かどうかを判定します。",
+     test: (L, P) => {
+       if (P) { const vars = P.lines.map(K => K.bare.match(/\bFor\s+([\w\u3040-\u30ff\u4e00-\u9fff]+)\s*=\s*\d+\s+To\s+\d+\b/i)).filter(Boolean).map(x => x[1].toLowerCase());
+         const v = L.bare.match(/\b(?:Worksheets|Sheets)\s*\(\s*([\w\u3040-\u30ff\u4e00-\u9fff]+)\s*\)/i);
+         if (v && vars.includes(v[1].toLowerCase())) return true; }
+       const re = /(?:([\w\u3040-\u30ff\u4e00-\u9fff]+)\s*\.\s*)?\b(?:Worksheets|Sheets)\s*\(\s*\d+\s*\)/gi; let m, hit = false;
+       while ((m = re.exec(L.bare))) {
+         // CSVを開いた直後・新しく作ったブックはシートが1枚なので対象外（Set wb = Workbooks.Open/Add と同じ処理の中）
+         if (m[1] && P && P.lines.some(K => new RegExp("\\bSet\\s+" + m[1] + "\\s*=\\s*Workbooks\\s*\\.\\s*(Open|Add)\\b", "i").test(K.bare))) continue;
+         hit = true;
+       }
+       return hit; }},
+    {id: "hard-path", level: "high", title: "保存場所（フォルダ）を直接書いている",
+     why: "「C:\\Users\\…」のような場所を書き込んでいると、ファイルを別のフォルダやPCに移したとき、ユーザー名が違うときに動きません。",
+     fix: "ThisWorkbook.Path（このブックと同じフォルダ）を使うか、場所をシートのセルに書いておいて読み込みます。",
+     test: L => L.strs.some(s => /^[A-Za-z]:\\/.test(s) || /^\\\\[^\\]/.test(s))},
+    {id: "enable-events", level: "high", title: "イベントを止めたまま戻していない",
+     why: "Application.EnableEvents = False のあと True に戻していないと、途中で止まったときにExcelのイベント（ボタン・入力時の処理）が動かないままになります。",
+     fix: "処理の最後と、エラーのときの行き先（On Error GoTo の先）の両方で Application.EnableEvents = True に戻します。",
+     procTest: P => !has(P, /Application\.EnableEvents\s*=\s*True/i) && find(P, /Application\.EnableEvents\s*=\s*False/i)},
+    {id: "resume-next", level: "high", title: "エラーを無視したまま最後まで進む",
+     why: "On Error Resume Next のあと On Error GoTo 0 で元に戻していないと、それ以降のエラーもすべて無視され、間違った結果のまま「正常に終わった」ように見えます。",
+     fix: "エラーを無視したい1〜2行だけを On Error Resume Next と On Error GoTo 0 ではさみます。",
+     procTest: P => { let on = false, hit = null; for (const L of P.lines) { if (/On\s+Error\s+Resume\s+Next/i.test(L.bare)) { on = true; hit = hit || L; } else if (/On\s+Error\s+GoTo\s+/i.test(L.bare)) on = false; } return on ? hit : false; }},
+    {id: "ptrsafe", level: "high", title: "64ビット版Excelで動かない宣言がある",
+     why: "Declare 文に PtrSafe がないと、今の多くのPCに入っている64ビット版のExcelでは、マクロを開いた時点でエラーになります。",
+     fix: "Declare PtrSafe Function 〜 のように PtrSafe を足し、必要に応じて Long を LongPtr に変えます。",
+     test: L => /^\s*(?:(?:Public|Private)\s+)?Declare\s+(?!PtrSafe\b)/i.test(L.bare)},
+    {id: "sendkeys", level: "high", title: "SendKeys（キー操作のまね）を使っている",
+     why: "SendKeys は、そのとき前面にある画面にキーを送ります。別の画面が出ていると、意図しない所に入力されることがあります。",
+     fix: "キー操作をまねるのではなく、セルやシートに直接値を書き込む命令に置き換えます。",
+     test: L => /\bSendKeys\b/i.test(L.bare)},
+    {id: "password", level: "high", title: "パスワードがコードに書かれている",
+     why: "コードを見られるとパスワードがわかってしまいます。マクロを人に見せたり送ったりするときにも注意が必要です。",
+     fix: "パスワードはコードに書かず、実行時に入力してもらう（InputBox）などに変えます。人に見せる前には消しておきます。",
+     test: L => /Password\s*:=\s*""/i.test(L.bare) && L.strs.some(s => s !== "") || /\.(Unprotect|Protect)\s+""/i.test(L.bare) && L.strs.some(s => s !== "")},
+    {id: "select", level: "mid", title: "Select・Activate・Selection で画面を動かしている",
+     why: "「選んでから操作する」書き方は、処理の途中でほかのシートやブックをクリックしたり、別のブックが前面にあったりすると、違う場所を書き換えてしまいます。処理も遅くなります。",
+     fix: "選ばずに直接指定します。例：Range(\"A1\").Select → Selection.Value = 1 を Worksheets(\"売上\").Range(\"A1\").Value = 1 に。",
+     test: L => /\.(Select|Activate)\b/i.test(L.bare) || /\b(Selection|ActiveCell)\b/i.test(L.bare)},
+    {id: "fixed-rows", level: "mid", title: "行数（最後の行）を決め打ちしている",
+     why: "Range(\"A2:A1000\") や For i = 2 To 500 のように行数を決めていると、データが増えたときに途中までしか処理されません。",
+     fix: "最後の行を毎回数えます。例：最終行 = Cells(Rows.Count, 1).End(xlUp).Row",
+     test: L => { const m = L.bare.match(/\bFor\s+\w+\s*=\s*[^\n]*?\bTo\s+(\d+)\b/i); if (m && +m[1] >= 100) return true;
+       return L.strs.some(s => { const r = s.match(/^\$?[A-Z]{1,3}\$?(\d+):\$?[A-Z]{1,3}\$?(\d+)$/i); return r && +r[2] >= 100; }) && /\bRange\s*\(/i.test(L.bare); }},
+    {id: "xldown", level: "mid", title: "End(xlDown) で最後の行を探している",
+     why: "End(xlDown) は途中に空白のセルがあると、そこで止まります。データが1行だけのときは、シートのいちばん下（104万行目）まで飛んでしまいます。",
+     fix: "下から上に探します。例：Cells(Rows.Count, 1).End(xlUp).Row",
+     test: L => /\.End\s*\(\s*xlDown\s*\)/i.test(L.bare)},
+    {id: "integer", level: "mid", title: "行番号・件数を Integer 型で扱っている",
+     why: "Integer は 32,767 までしか入りません。行数が32,767を超えると「オーバーフローしました」で止まります。",
+     fix: "As Integer を As Long に変えます（速さはほぼ変わりません）。",
+     test: (L, P) => {
+       const re = /([\w\u3040-\u30ff\u4e00-\u9fff]+)\s+As\s+Integer\b/gi; let m;
+       while ((m = re.exec(L.bare))) {
+         const v = m[1].replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+         const use = new RegExp("(\\bCells\\s*\\(\\s*" + v + "\\b|\\bRows\\s*\\(\\s*" + v + "\\b|\\bRange\\s*\\(\\s*\"\"\\s*&\\s*" + v + "\\b|^\\s*" + v + "\\s*=.*\\.(Row|Count)\\b|\\bTo\\s+[^\\n]*\\.(Row|Count)\\b)", "i");
+         if (!P || P.lines.some(K => use.test(K.bare))) return true;
+       }
+       return false; }},
+    {id: "screen-updating", level: "mid", title: "画面の更新・自動計算を止めたまま戻していない",
+     why: "ScreenUpdating = False や Calculation = xlCalculationManual のあと元に戻していないと、途中で止まったときに画面が固まったように見えたり、数式が再計算されなくなったりします。",
+     fix: "処理の最後とエラーのときの行き先で、Application.ScreenUpdating = True、Application.Calculation = xlCalculationAutomatic に戻します。",
+     procTest: P => (!has(P, /Application\.ScreenUpdating\s*=\s*True/i) && find(P, /Application\.ScreenUpdating\s*=\s*False/i)) ||
+                   (!has(P, /Application\.Calculation\s*=\s*xlCalculationAutomatic/i) && find(P, /Application\.Calculation\s*=\s*xlCalculationManual/i))},
+    {id: "option-explicit", level: "mid", title: "Option Explicit（変数の宣言チェック）がない",
+     why: "変数名を打ち間違えても、エラーにならずに空の値のまま進んでしまいます。",
+     fix: "モジュールのいちばん上に Option Explicit と書き、使う変数を Dim で宣言します。",
+     whole: ctx => ctx.procs.length > 0 && !ctx.lines.some(L => /^\s*Option\s+Explicit\b/i.test(L.bare))},
+    {id: "kill", level: "mid", title: "確認なしでファイルを削除している",
+     why: "Kill や DeleteFile は、ごみ箱に入れずにファイルを消します。場所の指定を間違えると、別のファイルが消えることがあります。",
+     fix: "消す前にファイル名を確認する処理を入れるか、「削除済み」フォルダへの移動に変えます。",
+     test: L => /\bKill\b/i.test(L.bare) || /\.DeleteFile\b/i.test(L.bare)},
+    {id: "active-book", level: "low", title: "ActiveSheet・ActiveWorkbook に頼っている",
+     why: "「今、前面にあるシート・ブック」を操作するため、別のブックを開いていると、そちらを書き換えてしまうことがあります。",
+     fix: "ThisWorkbook.Worksheets(\"シート名\") のように、ブックとシートを名前で指定します。",
+     test: L => /\b(ActiveSheet|ActiveWorkbook)\b/i.test(L.bare)},
+    {id: "default-sheet-name", level: "low", title: "「Sheet1」のような初期のシート名を使っている",
+     why: "誰かがシート名をわかりやすく変えたとたんに動かなくなります。",
+     fix: "シートに役割のわかる名前をつけ、その名前で指定します。",
+     test: L => L.strs.some(s => /^(Sheet\d+|シート\d+)$/i.test(s)) && /\b(Worksheets|Sheets)\s*\(/i.test(L.bare)},
+    {id: "fixed-date", level: "low", title: "日付・月をコードに書いている",
+     why: "「2026/09」「9月」のような日付がコードにあると、月が変わるたびにコードを書き換える必要があります。",
+     fix: "Date（今日の日付）から計算するか、シートのセルに入力した日付を読み込みます。",
+     test: L => /#\d{1,2}\/\d{1,2}\/\d{4}#/.test(L.bare) || L.strs.some(s => /(19|20)\d{2}[\/\-年.](0?[1-9]|1[0-2])/.test(s))},
+    {id: "fixed-book", level: "low", title: "ブックのファイル名を直接書いている",
+     why: "Workbooks(\"売上_9月.xlsx\") のような書き方は、ファイル名が変わる（月が変わる・コピーする）と動きません。",
+     fix: "ファイルを選んでもらう（Application.GetOpenFilename）か、シートのセルにファイル名を書いて読み込みます。",
+     test: L => /\bWorkbooks\s*\(\s*""\s*\)/i.test(L.bare) && L.strs.some(s => /\.xls[xmb]?$/i.test(s))},
+    {id: "goto", level: "low", title: "GoTo で処理を飛ばしている",
+     why: "処理があちこちに飛ぶと、あとから読んだ人（将来の自分も）が流れを追いにくくなります。",
+     fix: "If 〜 End If や Exit For、Exit Sub で書き直せないか検討します。エラー処理の On Error GoTo はこのままで大丈夫です。",
+     test: L => /\bGoTo\b/i.test(L.bare) && !/\bOn\s+Error\s+GoTo\b/i.test(L.bare)},
+    {id: "long-proc", level: "low", title: "1つの処理（Sub/Function）がとても長い",
+     why: "150行を超える処理は、どこで何をしているかがわかりにくく、直すときに別の所を壊しやすくなります。",
+     fix: "「読み込み」「集計」「書き出し」のように、役割ごとに小さな Sub に分けます。",
+     procTest: P => (P.end || P.lines[P.lines.length-1].no) - P.start + 1 > 150}
+  ];
+  function has(P, re){ return P.lines.some(L => re.test(L.bare)); }
+  function find(P, re){ return P.lines.find(L => re.test(L.bare)) || false; }
+
+  function analyze(text){
+    const ctx = prepare(text);
+    const out = [];
+    for (const R of RULES) {
+      let hits = [];
+      if (R.test) for (const L of ctx.lines) if (R.test(L, ctx.procOf.get(L))) hits.push(L);
+      if (R.procTest) for (const P of ctx.procs) { const r = R.procTest(P); if (r) hits.push(r === true ? P.lines[0] : r); }
+      if (R.whole && R.whole(ctx)) hits.push({no: 1, text: "（モジュール全体）"});
+      if (hits.length) out.push({id: R.id, level: R.level, title: R.title, why: R.why, fix: R.fix, lines: hits.map(h => ({no: h.no, text: h.text}))});
+    }
+    const c = {high: 0, mid: 0, low: 0}; out.forEach(f => c[f.level]++);
+    const grade = c.high >= 2 ? "D" : c.high === 1 ? "C" : c.mid >= 1 ? "B" : "A";
+    return {findings: out, counts: c, grade, procs: ctx.procs.length, lines: ctx.rawCount};
+  }
+
+  const GRADE_TEXT = {
+    A: "大きな問題は見つかりませんでした",
+    B: "動いてはいても、条件が変わると止まりやすい所があります",
+    C: "止まる・間違える原因になりやすい所があります。早めの見直しをおすすめします",
+    D: "止まる・間違える原因になりやすい所が複数あります。見直しをおすすめします"
+  };
+  function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+  let last = null;
+  function run(){
+    const text = $("code").value;
+    if (!/\b(Sub|Function)\b/i.test(text)) { $("msg").innerHTML = '<span class="err">Sub 〜 End Sub のようなマクロのコードが見つかりませんでした。コードを貼り付けてください。</span>'; $("result").hidden = true; return; }
+    $("msg").textContent = "";
+    const r = analyze(text); last = r;
+    $("grade").textContent = r.grade; $("grade").className = "g g" + r.grade;
+    $("gradeText").textContent = GRADE_TEXT[r.grade];
+    $("counts").innerHTML = "<span>要注意 " + r.counts.high + "</span><span>注意 " + r.counts.mid + "</span><span>参考 " + r.counts.low + "</span>" + '<br>調べた処理：' + r.procs + "個（" + r.lines + "行）";
+    let h = "";
+    if (!r.findings.length) h = '<p>よくある壊れやすい書き方は見つかりませんでした。</p>';
+    for (const f of r.findings) {
+      const shown = f.lines.slice(0, 8);
+      h += '<div class="f"><h3><span class="lv ' + f.level + '">' + LV[f.level] + "</span>" + esc(f.title) + "（" + f.lines.length + "か所）</h3>" +
+        "<p>" + esc(f.why) + '</p><p class="fix"><b>直し方：</b>' + esc(f.fix) + "</p>" +
+        '<ul class="hits">' + shown.map(l => "<li><b>" + l.no + "行目</b>" + esc(l.text.trim()) + "</li>").join("") + "</ul>" +
+        (f.lines.length > 8 ? '<p class="muted">ほか ' + (f.lines.length - 8) + " か所</p>" : "") + "</div>";
+    }
+    $("findings").innerHTML = h;
+    $("result").hidden = false;
+    $("result").scrollIntoView({behavior: "smooth", block: "start"});
+  }
+
+  function report(r){
+    let t = "マクロ健康診断の結果（mars works）\r\n判定：" + r.grade + "　" + GRADE_TEXT[r.grade] + "\r\n要注意 " + r.counts.high + "／注意 " + r.counts.mid + "／参考 " + r.counts.low + "\r\n\r\n";
+    for (const f of r.findings) {
+      t += "■[" + LV[f.level] + "] " + f.title + "（" + f.lines.length + "か所）\r\n" + f.why + "\r\n直し方：" + f.fix + "\r\n";
+      t += "該当：" + f.lines.map(l => l.no + "行目").join("、") + "\r\n\r\n";
+    }
+    return t;
+  }
+  function save(){
+    if (!last) return;
+    const blob = new Blob(["\uFEFF" + report(last)], {type: "text/plain;charset=utf-8"});
+    const a = document.createElement("a"); const d = new Date(), p = n => String(n).padStart(2, "0");
+    a.download = "マクロ健康診断_" + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + ".txt";
+    a.href = URL.createObjectURL(blob); document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  const SAMPLE = [
+    "' 見本：月次集計マクロ（架空のもの。よくある書き方をわざと入れています）",
+    "Sub 月次集計()",
+    "    Dim i As Integer",
+    "    Application.ScreenUpdating = False",
+    "    Workbooks.Open \"C:\\Users\\user\\Desktop\\売上データ\\2026年9月.xlsx\"",
+    "    Worksheets(2).Select",
+    "    Range(\"A2:D1000\").Copy",
+    "    ThisWorkbook.Worksheets(\"Sheet1\").Range(\"A2\").PasteSpecial",
+    "    On Error Resume Next",
+    "    For i = 2 To Range(\"A2\").End(xlDown).Row",
+    "        Cells(i, 5).Value = Cells(i, 3).Value * Cells(i, 4).Value",
+    "    Next i",
+    "    ActiveWorkbook.Close",
+    "End Sub"
+  ].join("\r\n");
+
+  function update(){ const has = $("code").value.trim() !== ""; $("run").disabled = !has; $("clear").disabled = !has; }
+  $("code").addEventListener("input", update);
+  $("run").addEventListener("click", run);
+  $("sample").addEventListener("click", () => { $("code").value = SAMPLE; update(); run(); });
+  $("clear").addEventListener("click", () => { $("code").value = ""; last = null; $("result").hidden = true; $("msg").textContent = ""; update(); });
+  $("pick").addEventListener("click", () => $("file").click());
+  $("file").addEventListener("change", async e => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    if (!/\.(bas|cls|frm|txt|vb)$/i.test(f.name)) { $("msg").innerHTML = '<span class="err">.bas・.cls・.frm・.txt のファイルを選んでください（.xlsm は、Alt＋F11 の画面からコードをコピーして貼り付けてください）。</span>'; return; }
+    $("code").value = decode(await f.arrayBuffer()); $("msg").textContent = f.name + " を読み込みました。"; update(); run();
+  });
+  $("save").addEventListener("click", save);
+
+  // テスト用（画面には影響しない）
+  window.__macroCheck = {analyze, prepare, splitLine, report, RULES};
+})();
+</script>
+</body>
+</html>
