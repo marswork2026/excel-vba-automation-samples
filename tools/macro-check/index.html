@@ -361,7 +361,7 @@ textarea{width:100%;min-height:260px;border:1px solid var(--line);border-radius:
   $("file").addEventListener("change", async e => {
     const f = e.target.files[0]; e.target.value = ""; if (!f) return;
     if (!/\.(bas|cls|frm|txt|vb)$/i.test(f.name)) { $("msg").innerHTML = '<span class="err">.bas・.cls・.frm・.txt のファイルを選んでください（.xlsm は、Alt＋F11 の画面からコードをコピーして貼り付けてください）。</span>'; return; }
-    $("code").value = decode(await f.arrayBuffer()); $("msg").textContent = f.name + " を読み込みました。"; update(); run();
+    $("code").value = decode(await f.arrayBuffer()); update(); run(); if ($("result").hidden === false) $("msg").textContent = f.name + " を読み込みました。";
   });
   $("save").addEventListener("click", save);
 
