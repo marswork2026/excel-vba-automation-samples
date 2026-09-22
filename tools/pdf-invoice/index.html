@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF請求書の一覧化｜mars works</title>
+<meta name="description" content="PDFの請求書を選ぶだけで、請求書番号・日付・請求元・金額・支払期限を表にしてCSVで保存できる無料ツール。ファイルはブラウザの中だけで処理し、どこにも送信しません。">
+<style>
+:root{--bg:#F7F4EE;--card:#FFFFFF;--ink:#2F3A34;--sub:#6B726D;--line:#DDD6CA;--green:#1E7B4B;--green-soft:#E6F2EA;--red:#C94A43;--code:#23272E}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#1C1F1D;--card:#262A27;--ink:#E8EAE8;--sub:#A5ACA7;--line:#3A403C;--green:#5CC08B;--green-soft:#23352B;--red:#E07A73}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;line-height:1.7}
+main{max-width:860px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:1.7rem;margin:.2em 0 .1em}
+.lead{color:var(--sub);margin:0 0 20px}
+.badge{display:inline-block;background:var(--green-soft);color:var(--green);font-weight:700;border-radius:999px;padding:2px 12px;font-size:.85rem;margin-right:6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:16px 0}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:28px 16px;text-align:center;cursor:pointer;transition:.15s}
+.drop.over{border-color:var(--green);background:var(--green-soft)}
+.drop strong{display:block;font-size:1.1rem}
+.btn{display:inline-block;border:0;border-radius:10px;padding:12px 20px;font-size:1rem;font-weight:700;cursor:pointer;background:var(--green);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.sub{background:transparent;color:var(--ink);border:1px solid var(--line)}
+label.opt{display:flex;gap:10px;align-items:flex-start;margin:8px 0}
+label.opt input{margin-top:6px}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:4px 8px;text-align:left;white-space:nowrap}
+th{background:var(--green-soft)}
+.scroll{overflow-x:auto;max-width:100%}
+.files li{margin:2px 0}
+.muted{color:var(--sub);font-size:.9rem}
+.err{color:var(--red)}
+.cta{background:var(--green-soft);border-color:transparent}
+.cta a{color:var(--green);font-weight:700}
+footer{color:var(--sub);font-size:.85rem;text-align:center;margin-top:32px}
+footer a{color:var(--sub)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+td.num{text-align:right}
+td.ng{color:var(--red)}
+.lines{font:12px/1.6 Consolas,"DejaVu Sans Mono",monospace;background:var(--bg);border-radius:8px;padding:8px 10px;margin:6px 0 0;white-space:pre-wrap;max-height:200px;overflow:auto}
+details{margin:6px 0}
+summary{cursor:pointer;color:var(--sub);font-size:.9rem}
+.badge2{display:inline-block;border-radius:6px;padding:0 8px;font-size:.8rem;font-weight:700;background:var(--green-soft);color:var(--green);margin-left:6px}
+.badge2.ng{background:#F6E2E1;color:var(--red)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .badge2.ng{background:#3A2422}}
+</style>
+</head>
+<body>
+<main>
+  <p><span class="badge">無料</span><span class="badge">登録不要</span><span class="badge">送信なし</span></p>
+  <h1>PDF請求書の一覧化</h1>
+  <p class="lead">PDFの請求書をまとめて選ぶと、請求書番号・請求日・請求元・金額・支払期限を読み取って一覧にします。そのままCSVで保存でき、Excelで開けます。</p>
+
+  <section class="card">
+    <div id="drop" class="drop" tabindex="0" role="button" aria-label="PDFファイルを選ぶ">
+      <strong>ここにPDFをドラッグ</strong>
+      <span class="muted">またはクリックして選ぶ（複数選択できます）</span>
+    </div>
+    <input id="file" type="file" accept=".pdf,application/pdf" multiple hidden>
+    <div id="fileInfo"></div>
+    <div class="row" style="margin-top:14px">
+      <button id="run" class="btn" disabled>一覧にする</button>
+      <button id="clear" class="btn sub" disabled>やり直す</button>
+    </div>
+    <p id="msg" class="muted"></p>
+  </section>
+
+  <section id="result" class="card" hidden>
+    <strong>読み取り結果</strong>
+    <p id="summary"></p>
+    <div class="scroll"><table id="preview"></table></div>
+    <p class="muted">金額は数字だけにしてあります（Excelでそのまま合計できます）。「—」は読み取れなかった項目です。下の「読み取った文字」で元のPDFの文字を確認できます。</p>
+    <div class="row"><button id="download" class="btn">一覧をCSVでダウンロード</button></div>
+    <div id="details" style="margin-top:14px"></div>
+  </section>
+
+  <section class="card cta">
+    <strong>「毎月の請求書を、フォルダごとボタン1つで台帳にしたい」</strong>
+    <p>お使いの請求書の書き方に合わせて、Excelのマクロ（VBA）で取り込みまで自動化します。見出しがバラバラな請求書や、明細行の取り込みにも対応できます。<br>
+    <a href="https://coconala.com/services/4414408" target="_blank" rel="noopener">PDF請求書→Excel台帳の転記を自動化（ココナラ）</a>　／
+    <a href="https://coconala.com/users/6110760" target="_blank" rel="noopener">ほかのサービス・ご相談</a></p>
+  </section>
+
+  <section class="card">
+    <strong>安心して使えるように</strong>
+    <ul class="muted">
+      <li>PDFはお使いのブラウザの中だけで読み取ります。インターネット上のどこにも送信・保存しません。</li>
+      <li>ページを閉じると、読み込んだ内容はすべて消えます。</li>
+      <li>読み取れるのは「文字が入っているPDF」です。紙をスキャンした画像だけのPDFは読み取れません（その場合はお知らせします）。</li>
+      <li>パスワードのかかったPDFは開けません。パスワードを外してからお試しください。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>© mars works ／ <a href="../csv-merge/">CSVまとめツール</a> ／ <a href="../macro-check/">マクロ健康診断</a> ／ <a href="https://github.com/marswork2026/excel-vba-automation-samples" target="_blank" rel="noopener">Excel VBAのサンプル</a></p>
+  </footer>
+</main>
+<script>
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const L1 = new TextDecoder("latin1");
+  let files = [];   // {name, size, buf}
+  let rows = null;  // 読み取り結果
+
+  // ===== PDFから文字を取り出す =====
+  async function inflate(bytes, raw){
+    const ds = new DecompressionStream(raw ? "deflate-raw" : "deflate");
+    const s = new Blob([bytes]).stream().pipeThrough(ds);
+    return new Uint8Array(await new Response(s).arrayBuffer());
+  }
+  async function unflate(bytes){
+    try { return await inflate(bytes, false); } catch(e){ try { return await inflate(bytes, true); } catch(e2){ return null; } }
+  }
+  function a85(bytes){
+    const out = []; let tuple = []; let s = L1.decode(bytes);
+    const end = s.indexOf("~>"); if (end !== -1) s = s.slice(0, end);
+    if (s.startsWith("<~")) s = s.slice(2);
+    for (const ch of s) {
+      if (ch === "z" && tuple.length === 0) { out.push(0,0,0,0); continue; }
+      const c = ch.charCodeAt(0); if (c < 33 || c > 117) continue;
+      tuple.push(c - 33);
+      if (tuple.length === 5) { let v = 0; for (const t of tuple) v = v * 85 + t;
+        out.push((v>>>24)&255,(v>>>16)&255,(v>>>8)&255,v&255); tuple = []; }
+    }
+    if (tuple.length) { const n = tuple.length; for (let i = n; i < 5; i++) tuple.push(84);
+      let v = 0; for (const t of tuple) v = v * 85 + t;
+      const b = [(v>>>24)&255,(v>>>16)&255,(v>>>8)&255,v&255]; out.push.apply(out, b.slice(0, n - 1)); }
+    return new Uint8Array(out);
+  }
+  async function decodeStream(dict, bytes){
+    let data = bytes;
+    const f = /\/Filter\s*(?:\[([^\]]*)\]|\/(\w+))/.exec(dict);
+    const names = f ? (f[1] ? [...f[1].matchAll(/\/(\w+)/g)].map(x => x[1]) : [f[2]]) : [];
+    for (const n of names) {
+      if (n === "ASCII85Decode") data = a85(data);
+      else if (n === "FlateDecode") { const d = await unflate(data); if (!d) return null; data = d; }
+      else if (n === "ASCIIHexDecode") { const s = L1.decode(data).replace(/[^0-9A-Fa-f]/g,""); const o = [];
+        for (let i = 0; i < s.length; i += 2) o.push(parseInt(s.substr(i,2).padEnd(2,"0"),16)); data = new Uint8Array(o); }
+      else return null;
+    }
+    return data;
+  }
+  function parseObjects(buf){
+    const s = L1.decode(buf); const objs = new Map();
+    const re = /(\d+)\s+(\d+)\s+obj\b/g; let m;
+    while ((m = re.exec(s))) {
+      const num = +m[1]; const start = m.index + m[0].length;
+      const stIdx = s.indexOf("stream", start), endObj = s.indexOf("endobj", start);
+      let dict, stream = null;
+      if (stIdx !== -1 && (endObj === -1 || stIdx < endObj)) {
+        dict = s.slice(start, stIdx);
+        let p = stIdx + 6; if (s[p] === "\r") p++; if (s[p] === "\n") p++;
+        const end = s.indexOf("endstream", p);
+        stream = buf.subarray(p, end === -1 ? buf.length : end);
+      } else dict = s.slice(start, endObj === -1 ? undefined : endObj);
+      objs.set(num, {dict, stream});
+    }
+    return objs;
+  }
+  function parseCMap(text){
+    const map = new Map(); let codeLen = 1;
+    const cs = /begincodespacerange([\s\S]*?)endcodespacerange/.exec(text);
+    if (cs) { const h = cs[1].match(/<([0-9A-Fa-f]+)>/); if (h) codeLen = h[1].length / 2; }
+    const dec = h => { let s = ""; for (let i = 0; i < h.length; i += 4) s += String.fromCharCode(parseInt(h.substr(i,4),16)); return s; };
+    for (const b of text.matchAll(/beginbfchar([\s\S]*?)endbfchar/g))
+      for (const c of b[1].matchAll(/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]*)>/g)) map.set(parseInt(c[1],16), dec(c[2]));
+    for (const b of text.matchAll(/beginbfrange([\s\S]*?)endbfrange/g)) {
+      const body = b[1];
+      for (const r of body.matchAll(/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g)) {
+        const lo = parseInt(r[1],16), hi = parseInt(r[2],16), st = parseInt(r[3],16);
+        for (let i = 0; lo + i <= hi && i < 65536; i++) map.set(lo + i, String.fromCharCode(st + i));
+      }
+      for (const r of body.matchAll(/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*\[([\s\S]*?)\]/g)) {
+        const lo = parseInt(r[1],16); let i = 0;
+        for (const d of r[3].matchAll(/<([0-9A-Fa-f]*)>/g)) map.set(lo + (i++), dec(d[1]));
+      }
+    }
+    return {map, codeLen};
+  }
+  function textFromContent(str, fonts){
+    const out = []; let font = null, tx = 0, ty = 0, line = null;
+    const push = t => { if (!t) return;
+      if (line && Math.abs(line.y - ty) < 2) line.parts.push({x: tx, t});
+      else { line = {y: ty, parts: [{x: tx, t}]}; out.push(line); } };
+    const decode = bytes => {
+      const f = font;
+      if (!f || !f.map || !f.map.size) return bytes.map(b => String.fromCharCode(b)).join("");
+      const n = f.codeLen; let s = "";
+      for (let i = 0; i < bytes.length; i += n) {
+        let code = 0; for (let k = 0; k < n; k++) code = (code << 8) | (bytes[i+k] || 0);
+        s += f.map.has(code) ? f.map.get(code) : "";
+      }
+      return s;
+    };
+    const lit = raw => { const b = [];
+      for (let i = 0; i < raw.length; i++) { const c = raw[i];
+        if (c === "\\") { const n = raw[++i];
+          if (n === "n") b.push(10); else if (n === "r") b.push(13); else if (n === "t") b.push(9);
+          else if (n >= "0" && n <= "7") { let o = n; while (raw[i+1] >= "0" && raw[i+1] <= "7" && o.length < 3) o += raw[++i]; b.push(parseInt(o,8)); }
+          else if (n !== undefined) b.push(n.charCodeAt(0));
+        } else b.push(c.charCodeAt(0)); }
+      return b; };
+    const hex = h => { h = h.replace(/\s/g,""); if (h.length % 2) h += "0";
+      const b = []; for (let i = 0; i < h.length; i += 2) b.push(parseInt(h.substr(i,2),16)); return b; };
+    const re = /\/([A-Za-z0-9#+\-.]+)\s+[\d.]+\s+Tf|(-?[\d.]+)\s+(-?[\d.]+)\s+(Td|TD)|(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+Tm|\((?:\\[\s\S]|[^\\()])*\)\s*(?:Tj|'|")|<[0-9A-Fa-f\s]*>\s*Tj|\[(?:[^\[\]\\]|\\[\s\S])*\]\s*TJ|BT|ET|T\*/g;
+    let m;
+    while ((m = re.exec(str))) {
+      const tok = m[0];
+      if (m[1] !== undefined) { font = fonts[m[1]] || null; continue; }
+      if (m[4]) { tx += +m[2]; ty += +m[3]; line = null; continue; }
+      if (/Tm$/.test(tok)) { tx = +m[10]; ty = +m[11]; line = null; continue; }
+      if (tok === "BT") { tx = 0; ty = 0; line = null; continue; }
+      if (tok === "T*") { ty -= 12; line = null; continue; }
+      if (tok === "ET") { line = null; continue; }
+      if (tok[0] === "(") { push(decode(lit(tok.slice(1, tok.lastIndexOf(")"))))); continue; }
+      if (tok[0] === "<") { push(decode(hex(tok.slice(1, tok.indexOf(">"))))); continue; }
+      if (tok[0] === "[") { let s = "";
+        for (const p of tok.matchAll(/\((?:\\[\s\S]|[^\\()])*\)|<[0-9A-Fa-f\s]*>|(-?[\d.]+)/g)) {
+          if (p[0][0] === "(") s += decode(lit(p[0].slice(1,-1)));
+          else if (p[0][0] === "<") s += decode(hex(p[0].slice(1,-1)));
+          else if (+p[0] < -120) s += " ";
+        }
+        push(s); continue; }
+    }
+    return out;
+  }
+  async function pdfLines(buf){
+    const head = L1.decode(buf.subarray(0, 1024));
+    if (!/%PDF-/.test(head)) throw new Error("NOTPDF");
+    if (/\/Encrypt\b/.test(L1.decode(buf))) throw new Error("ENCRYPTED");
+    const objs = parseObjects(buf);
+    const pages = [...objs.values()].filter(o => /\/Type\s*\/Page\b/.test(o.dict));
+    if (!pages.length) throw new Error("BROKEN");
+    const out = [];
+    for (const o of pages) {
+      let res = o.dict;
+      const rref = /\/Resources\s+(\d+)\s+\d+\s+R/.exec(o.dict);
+      if (rref && objs.get(+rref[1])) res = objs.get(+rref[1]).dict;
+      let fdict = null;
+      const fm = /\/Font\s*(\d+)\s+\d+\s+R/.exec(res);
+      if (fm && objs.get(+fm[1])) fdict = objs.get(+fm[1]).dict;
+      else { const inl = /\/Font\s*<<([\s\S]*?)>>/.exec(res); if (inl) fdict = inl[1]; }
+      const fonts = {};
+      if (fdict) for (const f of fdict.matchAll(/\/([A-Za-z0-9#+\-.]+)\s+(\d+)\s+\d+\s+R/g)) {
+        const fo = objs.get(+f[2]); if (!fo) continue;
+        const tuM = /\/ToUnicode\s+(\d+)\s+\d+\s+R/.exec(fo.dict);
+        let map = new Map(), codeLen = 1;
+        if (tuM && objs.get(+tuM[1])) {
+          const to = objs.get(+tuM[1]);
+          const data = to.stream ? await decodeStream(to.dict, to.stream) : null;
+          if (data) { const p = parseCMap(L1.decode(data)); map = p.map; codeLen = p.codeLen; }
+        }
+        fonts[f[1]] = {map, codeLen};
+      }
+      const cm = /\/Contents\s+(?:(\d+)\s+\d+\s+R|\[([^\]]*)\])/.exec(o.dict);
+      const ids = cm ? (cm[1] ? [+cm[1]] : [...cm[2].matchAll(/(\d+)\s+\d+\s+R/g)].map(x => +x[1])) : [];
+      for (const id of ids) {
+        const co = objs.get(id); if (!co || !co.stream) continue;
+        const data = await decodeStream(co.dict, co.stream);
+        if (!data) continue;
+        out.push.apply(out, textFromContent(L1.decode(data), fonts));
+      }
+    }
+    return out.map(l => l.parts.sort((a,b) => a.x - b.x).map(p => p.t).join(" ").replace(/\s+/g," ").trim()).filter(Boolean);
+  }
+
+  // ===== 読み取りルール =====
+  const Z2H = s => s.replace(/[！-～]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/　/g, " ").replace(/[￥]/g, "¥");
+  const DATE = "[0-9]{4}\\s*[\\/年.\\-]\\s*[0-9]{1,2}\\s*[\\/月.\\-]\\s*[0-9]{1,2}\\s*日?";
+  const SEP = "[\\s:：=]*";
+  const RULES = {
+    番号: ["請求書番号", "請求番号", "伝票番号", "請求書No", "インボイス番号", "Invoice No", "Invoice Number", "Invoice #", "No"],
+    請求日: ["請求日", "発行日", "作成日", "日付", "Invoice Date", "Issue Date", "Date"],
+    請求元: ["請求元", "発行元", "差出人", "会社名", "From", "Vendor", "Supplier"],
+    支払期限: ["お支払期限", "支払期限", "支払い期限", "振込期限", "入金期限", "期限", "Due Date", "Payment Due"]
+  };
+  const AMOUNT = ["ご請求金額", "請求金額", "合計金額", "お支払金額", "税込合計", "総額", "合計", "Total Amount", "Grand Total", "Total", "Amount Due"];
+
+  function normDate(s){
+    const m = /([0-9]{4})\s*[\/年.\-]\s*([0-9]{1,2})\s*[\/月.\-]\s*([0-9]{1,2})/.exec(s);
+    return m ? m[1] + "/" + ("0" + m[2]).slice(-2) + "/" + ("0" + m[3]).slice(-2) : "";
+  }
+  // norm（半角にそろえた文字列）で探し、値は raw（元の文字）から同じ位置で取り出す
+  // Z2H は1文字を1文字に置き換えるだけなので、位置がずれない
+  function findLabeled(norm, raw, labels, valueRe){
+    for (const lb of labels) {
+      const re = new RegExp(lb.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + SEP + "(" + valueRe + ")", "i");
+      const m = re.exec(norm);
+      if (m && m[1]) {
+        const at = m.index + m[0].length - m[1].length;
+        const v = (raw || norm).substr(at, m[1].length);
+        return v.trim();
+      }
+    }
+    return "";
+  }
+  function extract(lines){
+    const rawText = lines.join("\n");
+    const text = Z2H(rawText);
+    const one = text.replace(/\n/g, " ");
+    const rawOne = rawText.replace(/\n/g, " ");
+    const r = {};
+    r.番号 = findLabeled(one, rawOne, RULES.番号, "[A-Za-z0-9\uFF10-\uFF19\uFF21-\uFF3A\uFF66-\uFF9F][A-Za-z0-9\\-_/\uFF66-\uFF9F\uFF10-\uFF19\uFF21-\uFF3A]{1,30}");
+    r.請求日 = normDate(findLabeled(one, rawOne, RULES.請求日, DATE));
+    r.支払期限 = normDate(findLabeled(one, rawOne, RULES.支払期限, DATE));
+    const 元 = findLabeled(text, rawText, RULES.請求元, "[^\\n]{1,40}");
+    r.請求元 = (元 || "").replace(/\s{2,}.*$/, "").trim();
+    // 金額：ラベル付きを優先し、複数あれば「合計」系の最後の値
+    let amount = "";
+    for (const lb of AMOUNT) {
+      const re = new RegExp(lb.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + SEP + "(?:¥|JPY|円)?" + SEP + "([0-9][0-9,]{2,})", "gi");
+      let m, last = "";
+      while ((m = re.exec(one))) last = m[1];
+      if (last) { amount = last; break; }
+    }
+    r.金額 = amount ? Number(amount.replace(/,/g, "")) : "";
+    return r;
+  }
+
+  // ===== 画面 =====
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+  async function addFiles(list){
+    const arr = Array.from(list).filter(f => /\.pdf$/i.test(f.name) || f.type === "application/pdf");
+    const skipped = Array.from(list).length - arr.length;
+    for (const f of arr) {
+      if (files.some(x => x.name === f.name && x.size === f.size)) continue;
+      files.push({name: f.name, size: f.size, buf: new Uint8Array(await f.arrayBuffer())});
+    }
+    renderFiles(skipped);
+  }
+  function renderFiles(skipped){
+    const info = $("fileInfo");
+    if (!files.length) { info.innerHTML = ""; $("run").disabled = true; $("clear").disabled = true; return; }
+    let h = '<p class="muted" style="margin:12px 0 4px">読み込んだファイル（' + files.length + '件）</p><ul class="files">';
+    for (const f of files) h += "<li>" + esc(f.name) + ' <span class="muted">' + Math.max(1, Math.round(f.size/1024)) + "KB</span></li>";
+    h += "</ul>";
+    if (skipped) h += '<p class="err">PDF以外のファイル ' + skipped + " 件は読み込みませんでした。</p>";
+    info.innerHTML = h;
+    $("run").disabled = false; $("clear").disabled = false;
+  }
+  const COLS = ["ファイル名", "請求書番号", "請求日", "請求元", "金額", "支払期限"];
+  async function run(){
+    $("msg").textContent = "読み取り中…";
+    const out = [];
+    for (const f of files) {
+      let rec = {ファイル名: f.name, 請求書番号: "", 請求日: "", 請求元: "", 金額: "", 支払期限: "", lines: [], note: ""};
+      try {
+        const lines = await pdfLines(f.buf);
+        rec.lines = lines;
+        if (!lines.length) rec.note = "文字が入っていないPDFのようです（紙をスキャンした画像だけのPDFは読み取れません）";
+        else {
+          const r = extract(lines);
+          rec.請求書番号 = r.番号; rec.請求日 = r.請求日; rec.請求元 = r.請求元; rec.金額 = r.金額; rec.支払期限 = r.支払期限;
+          if (!r.番号 && !r.金額) rec.note = "請求書番号も金額も見つかりませんでした（見出しの書き方が違う可能性があります）";
+        }
+      } catch (e) {
+        rec.note = e.message === "ENCRYPTED" ? "パスワードで保護されたPDFのため開けません"
+                 : e.message === "NOTPDF" ? "PDFとして読めないファイルです"
+                 : e.message === "BROKEN" ? "PDFのページが見つかりませんでした（ファイルが壊れているか、対応していない形式です）"
+                 : "読み取れませんでした（" + e.message + "）";
+      }
+      out.push(rec);
+    }
+    rows = out;
+    const ok = out.filter(r => r.請求書番号 || r.金額).length;
+    $("summary").textContent = out.length + "件のPDFのうち、" + ok + "件から内容を読み取りました。" + (out.length - ok ? "残り" + (out.length - ok) + "件は確認が必要です。" : "");
+    let t = "<tr>" + COLS.map(c => "<th>" + c + "</th>").join("") + "</tr>";
+    for (const r of out) {
+      t += "<tr>" + COLS.map(c => {
+        const v = r[c];
+        if (c === "金額") return v === "" ? '<td class="ng">—</td>' : '<td class="num">' + v.toLocaleString() + "</td>";
+        return v ? "<td>" + esc(v) + "</td>" : (c === "ファイル名" ? "<td></td>" : '<td class="ng">—</td>');
+      }).join("") + "</tr>";
+    }
+    $("preview").innerHTML = t;
+    let d = "";
+    for (const r of out) {
+      const ng = !!r.note;
+      d += "<details><summary>" + esc(r.ファイル名) + '<span class="badge2' + (ng ? " ng" : "") + '">' + (ng ? "要確認" : "読み取った文字") + "</span>" +
+           (ng ? ' <span class="err">' + esc(r.note) + "</span>" : "") + "</summary>" +
+           '<div class="lines">' + (r.lines.length ? esc(r.lines.join("\n")) : "（文字が取り出せませんでした）") + "</div></details>";
+    }
+    $("details").innerHTML = d;
+    $("msg").textContent = "";
+    $("result").hidden = false;
+    $("result").scrollIntoView({behavior: "smooth", block: "start"});
+  }
+  function toCSV(){
+    const q = v => { v = v == null ? "" : String(v); return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    const head = COLS.concat(["備考"]).map(q).join(",");
+    const body = rows.map(r => COLS.map(c => q(r[c])).concat([q(r.note)]).join(","));
+    return [head].concat(body).join("\r\n") + "\r\n";
+  }
+  function download(){
+    if (!rows) return;
+    const blob = new Blob(["\uFEFF" + toCSV()], {type: "text/csv;charset=utf-8"});
+    const a = document.createElement("a"); const d = new Date(), p = n => String(n).padStart(2, "0");
+    a.download = "請求書一覧_" + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + "_" + p(d.getHours()) + p(d.getMinutes()) + ".csv";
+    a.href = URL.createObjectURL(blob);
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  const drop = $("drop"), input = $("file");
+  drop.addEventListener("click", () => input.click());
+  drop.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); input.click(); } });
+  input.addEventListener("change", e => { addFiles(e.target.files); input.value = ""; });
+  ["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+  $("run").addEventListener("click", run);
+  $("download").addEventListener("click", download);
+  $("clear").addEventListener("click", () => { files = []; rows = null; renderFiles(0); $("result").hidden = true; $("msg").textContent = ""; });
+
+  window.__pdfInvoice = {pdfLines, extract, normDate, toCSV: () => toCSV(), get rows(){ return rows; }};
+})();
+
+</script>
+</body>
+</html>
