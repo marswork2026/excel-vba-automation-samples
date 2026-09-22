@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSVまとめツール｜mars works</title>
+<meta name="description" content="複数のCSVファイルを1つにまとめる無料ツール。Shift_JISとUTF-8が混ざっていても文字化けしません。ファイルはブラウザの中だけで処理し、どこにも送信しません。">
+<style>
+:root{--bg:#F7F4EE;--card:#FFFFFF;--ink:#2F3A34;--sub:#6B726D;--line:#DDD6CA;--green:#1E7B4B;--green-soft:#E6F2EA;--red:#C94A43;--code:#23272E}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#1C1F1D;--card:#262A27;--ink:#E8EAE8;--sub:#A5ACA7;--line:#3A403C;--green:#5CC08B;--green-soft:#23352B;--red:#E07A73}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;line-height:1.7}
+main{max-width:860px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:1.7rem;margin:.2em 0 .1em}
+.lead{color:var(--sub);margin:0 0 20px}
+.badge{display:inline-block;background:var(--green-soft);color:var(--green);font-weight:700;border-radius:999px;padding:2px 12px;font-size:.85rem;margin-right:6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:16px 0}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:28px 16px;text-align:center;cursor:pointer;transition:.15s}
+.drop.over{border-color:var(--green);background:var(--green-soft)}
+.drop strong{display:block;font-size:1.1rem}
+.btn{display:inline-block;border:0;border-radius:10px;padding:12px 20px;font-size:1rem;font-weight:700;cursor:pointer;background:var(--green);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.sub{background:transparent;color:var(--ink);border:1px solid var(--line)}
+label.opt{display:flex;gap:10px;align-items:flex-start;margin:8px 0}
+label.opt input{margin-top:6px}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:4px 8px;text-align:left;white-space:nowrap}
+th{background:var(--green-soft)}
+.scroll{overflow-x:auto;max-width:100%}
+.files li{margin:2px 0}
+.muted{color:var(--sub);font-size:.9rem}
+.err{color:var(--red)}
+.cta{background:var(--green-soft);border-color:transparent}
+.cta a{color:var(--green);font-weight:700}
+footer{color:var(--sub);font-size:.85rem;text-align:center;margin-top:32px}
+footer a{color:var(--sub)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+</style>
+</head>
+<body>
+<main>
+  <p><span class="badge">無料</span><span class="badge">登録不要</span><span class="badge">送信なし</span></p>
+  <h1>CSVまとめツール</h1>
+  <p class="lead">店舗別・月別などに分かれたCSVファイルを、1つのCSVにまとめます。Shift_JIS（Excelで保存したCSV）とUTF-8が混ざっていても文字化けしません。</p>
+
+  <section class="card">
+    <div id="drop" class="drop" tabindex="0" role="button" aria-label="CSVファイルを選ぶ">
+      <strong>ここにCSVファイルをドラッグ</strong>
+      <span class="muted">またはクリックして選ぶ（複数選択できます）</span>
+    </div>
+    <input id="file" type="file" accept=".csv,text/csv" multiple hidden>
+    <div id="fileInfo"></div>
+  </section>
+
+  <section class="card">
+    <strong>まとめ方</strong>
+    <label class="opt"><input type="checkbox" id="optHeader" checked><span>1行目は見出し（列名）として扱う<br><span class="muted">見出しは1回だけ残し、同じ列名どうしをそろえてまとめます。列の並びが違うファイルや、列が足りないファイルも正しくそろいます。</span></span></label>
+    <label class="opt"><input type="checkbox" id="optSource"><span>どのファイルの行かわかるように「元ファイル名」の列を足す</span></label>
+    <label class="opt"><input type="checkbox" id="optSort" checked><span>ファイル名の順に並べる</span></label>
+    <div class="row" style="margin-top:12px">
+      <button id="run" class="btn" disabled>まとめる</button>
+      <button id="clear" class="btn sub" disabled>やり直す</button>
+    </div>
+  </section>
+
+  <section id="result" class="card" hidden>
+    <strong>結果</strong>
+    <p id="summary"></p>
+    <div class="scroll"><table id="preview"></table></div>
+    <p class="muted" id="previewNote"></p>
+    <div class="row"><button id="download" class="btn">まとめたCSVをダウンロード</button></div>
+    <p class="muted">保存形式：UTF-8（BOM付き）のCSV。ダブルクリックでExcelで開いても文字化けしません。</p>
+  </section>
+
+  <section class="card cta">
+    <strong>「毎月このまとめ作業をボタン1つにしたい」「集計や転記まで自動にしたい」</strong>
+    <p>お使いのファイルに合わせて、Excelのマクロ（VBA）やGoogleスプレッドシートで自動化します。<br>
+    <a href="https://coconala.com/services/4414269" target="_blank" rel="noopener">定型作業のテンプレ自動化（ココナラ）</a>　／
+    <a href="https://coconala.com/users/6110760" target="_blank" rel="noopener">ほかのサービス・ご相談</a></p>
+  </section>
+
+  <section class="card">
+    <strong>安心して使えるように</strong>
+    <ul class="muted">
+      <li>ファイルはお使いのブラウザの中だけで処理します。インターネット上のどこにも送信・保存しません。</li>
+      <li>ページを閉じると、読み込んだ内容はすべて消えます。</li>
+      <li>大きなファイル（数十MB以上）は、パソコンの性能によって時間がかかることがあります。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>© mars works ／ <a href="https://github.com/marswork2026/excel-vba-automation-samples" target="_blank" rel="noopener">Excel VBAのサンプル</a> ／ <a href="https://www.instagram.com/marswork2026/" target="_blank" rel="noopener">Instagram</a> ／ <a href="https://x.com/marswork2026" target="_blank" rel="noopener">X</a></p>
+  </footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  let files = [];      // {name, text, encoding, rows}
+  let merged = null;   // array of arrays
+
+  // ---- 文字コード判定 ----
+  function decode(buf){
+    const b = new Uint8Array(buf);
+    if (b.length >= 3 && b[0] === 0xEF && b[1] === 0xBB && b[2] === 0xBF) {
+      return {text: new TextDecoder("utf-8").decode(b.subarray(3)), encoding: "UTF-8（BOM付き）"};
+    }
+    try {
+      return {text: new TextDecoder("utf-8", {fatal: true}).decode(b), encoding: "UTF-8"};
+    } catch (e) {
+      return {text: new TextDecoder("shift_jis").decode(b), encoding: "Shift_JIS"};
+    }
+  }
+
+  // ---- CSVの読み取り（"で囲んだ中のカンマ・改行・""に対応） ----
+  function parseCSV(text){
+    const rows = []; let row = []; let field = ""; let q = false; let i = 0;
+    const n = text.length;
+    while (i < n) {
+      const c = text[i];
+      if (q) {
+        if (c === '"') {
+          if (text[i+1] === '"') { field += '"'; i += 2; continue; }
+          q = false; i++; continue;
+        }
+        field += c; i++; continue;
+      }
+      if (c === '"') { q = true; i++; continue; }
+      if (c === ',') { row.push(field); field = ""; i++; continue; }
+      if (c === '\r') { if (text[i+1] === '\n') { i++; continue; } row.push(field); rows.push(row); row = []; field = ""; i++; continue; }
+      if (c === '\n') { row.push(field); rows.push(row); row = []; field = ""; i++; continue; }
+      field += c; i++;
+    }
+    if (field !== "" || row.length) { row.push(field); rows.push(row); }
+    // 中身が空の行（空行）は除く
+    return rows.filter(r => r.some(v => v.trim() !== ""));
+  }
+
+  function toCSV(rows){
+    return rows.map(r => r.map(v => {
+      v = v == null ? "" : String(v);
+      return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+    }).join(",")).join("\r\n") + "\r\n";
+  }
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+  // ---- ファイル読み込み ----
+  async function addFiles(list){
+    const arr = Array.from(list).filter(f => /\.csv$/i.test(f.name) || f.type === "text/csv");
+    const skipped = Array.from(list).length - arr.length;
+    for (const f of arr) {
+      if (files.some(x => x.name === f.name && x.size === f.size)) continue;
+      const buf = await f.arrayBuffer();
+      const d = decode(buf);
+      files.push({name: f.name, size: f.size, text: d.text, encoding: d.encoding, rows: parseCSV(d.text)});
+    }
+    renderFiles(skipped);
+  }
+
+  function renderFiles(skipped){
+    const info = $("fileInfo");
+    if (!files.length) { info.innerHTML = ""; $("run").disabled = true; $("clear").disabled = true; return; }
+    let h = '<p class="muted" style="margin:12px 0 4px">読み込んだファイル（' + files.length + '件）</p><ul class="files">';
+    for (const f of files) h += "<li>" + esc(f.name) + '　<span class="muted">' + f.rows.length + "行・" + esc(f.encoding) + "</span></li>";
+    h += "</ul>";
+    if (skipped) h += '<p class="err">CSV以外のファイル ' + skipped + ' 件は読み込みませんでした。</p>';
+    info.innerHTML = h;
+    $("run").disabled = false; $("clear").disabled = false;
+  }
+
+  // 見出しが空欄の列は「列3」のように名前をつけて、データを消さない
+  function colName(c, j){ const k = String(c).trim(); return k !== "" ? k : "列" + (j + 1); }
+
+  // ---- まとめる ----
+  function merge(){
+    const useHeader = $("optHeader").checked, addSource = $("optSource").checked, sort = $("optSort").checked;
+    const list = files.slice();
+    if (sort) list.sort((a,b) => a.name.localeCompare(b.name, "ja", {numeric: true}));
+    let out = [];
+    if (useHeader) {
+      const cols = [];
+      for (const f of list) { const hdr = f.rows[0] || []; hdr.forEach((c, j) => { const k = colName(c, j); if (!cols.includes(k)) cols.push(k); }); }
+      out.push(addSource ? ["元ファイル名"].concat(cols) : cols.slice());
+      for (const f of list) {
+        const hdr = (f.rows[0] || []).map((c, j) => colName(c, j));
+        const idx = cols.map(c => hdr.indexOf(c));
+        for (const r of f.rows.slice(1)) {
+          const line = idx.map(j => j >= 0 && j < r.length ? r[j] : "");
+          out.push(addSource ? [f.name].concat(line) : line);
+        }
+      }
+    } else {
+      let w = 0; for (const f of list) for (const r of f.rows) w = Math.max(w, r.length);
+      for (const f of list) for (const r of f.rows) {
+        const line = r.concat(Array(w - r.length).fill(""));
+        out.push(addSource ? [f.name].concat(line) : line);
+      }
+    }
+    merged = out;
+    const dataRows = useHeader ? out.length - 1 : out.length;
+    $("summary").textContent = list.length + "件のファイルを、" + dataRows + "行" + (useHeader ? "（見出しを除く）" : "") + "・" + (out[0] ? out[0].length : 0) + "列にまとめました。";
+    const show = out.slice(0, useHeader ? 21 : 20);
+    let t = "";
+    show.forEach((r, i) => {
+      const tag = (useHeader && i === 0) ? "th" : "td";
+      t += "<tr>" + r.map(v => "<" + tag + ">" + esc(v) + "</" + tag + ">").join("") + "</tr>";
+    });
+    $("preview").innerHTML = t;
+    let note = dataRows > 20 ? "最初の20行だけを表示しています（ダウンロードするCSVには全行入っています）。" : "";
+    if (out.length > 1048576) note += "　※Excelで開ける行数（1,048,576行）を超えています。Excelでは途中までしか表示されません。ファイルを分けてまとめてください。";
+    $("previewNote").textContent = note;
+    $("previewNote").className = out.length > 1048576 ? "err" : "muted";
+    $("result").hidden = false;
+    $("result").scrollIntoView({behavior: "smooth", block: "start"});
+  }
+
+  function download(){
+    if (!merged) return;
+    const blob = new Blob(["﻿" + toCSV(merged)], {type: "text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    const d = new Date(), p = n => String(n).padStart(2, "0");
+    a.download = "まとめ_" + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + "_" + p(d.getHours()) + p(d.getMinutes()) + ".csv";
+    a.href = URL.createObjectURL(blob);
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  // ---- 画面の操作 ----
+  const drop = $("drop"), input = $("file");
+  drop.addEventListener("click", () => input.click());
+  drop.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); input.click(); } });
+  input.addEventListener("change", e => { addFiles(e.target.files); input.value = ""; });
+  ["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+  $("run").addEventListener("click", merge);
+  $("download").addEventListener("click", download);
+  $("clear").addEventListener("click", () => { files = []; merged = null; renderFiles(0); $("result").hidden = true; });
+
+  // テスト用（画面には影響しない）
+  window.__csvMerge = {decode, parseCSV, toCSV, get merged(){ return merged; }};
+})();
+</script>
+</body>
+</html>
