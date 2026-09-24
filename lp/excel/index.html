@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Excel自動化・マクロ修正のご相談 | mars works</title>
+  <meta
+    name="description"
+    content="Excelの手作業、壊れたマクロ、CSV取込、帳票転記などの困りごとを整理し、必要な範囲に合わせて修正・自動化をご提案します。まずは3問の無料相談から。"
+  >
+  <style>
+    :root {
+      --navy: #17324d;
+      --navy-light: #274f73;
+      --accent: #d58a3a;
+      --bg: #ffffff;
+      --soft: #f5f7f9;
+      --text: #1f2933;
+      --muted: #5b6773;
+      --border: #dbe3ea;
+      --shadow: 0 10px 28px rgba(23, 50, 77, 0.08);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Hiragino Kaku Gothic ProN",
+        "Hiragino Sans",
+        "Yu Gothic",
+        Meiryo,
+        sans-serif;
+      font-size: 16px;
+      line-height: 1.8;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: var(--navy-light);
+    }
+
+    a:focus-visible,
+    button:focus-visible {
+      outline: 3px solid rgba(213, 138, 58, 0.45);
+      outline-offset: 3px;
+    }
+
+    h1,
+    h2,
+    h3 {
+      color: var(--navy);
+      line-height: 1.4;
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 24px;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      letter-spacing: 0.02em;
+    }
+
+    h2 {
+      margin-bottom: 24px;
+      font-size: clamp(1.65rem, 4vw, 2.4rem);
+    }
+
+    h3 {
+      margin-bottom: 12px;
+      font-size: 1.15rem;
+    }
+
+    p {
+      margin: 0 0 1rem;
+    }
+
+    ul,
+    ol {
+      margin-top: 0;
+      padding-left: 1.4rem;
+    }
+
+    li + li {
+      margin-top: 0.5rem;
+    }
+
+    .container {
+      width: min(1100px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .hero {
+      padding: 72px 0 64px;
+      background:
+        linear-gradient(180deg, #f7fafc 0%, #ffffff 100%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 14px;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .lead {
+      font-size: 1.1rem;
+      color: var(--muted);
+    }
+
+    .hero-card {
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--navy);
+      font-size: 1.1rem;
+    }
+
+    section {
+      padding: 64px 0;
+    }
+
+    section:nth-of-type(even) {
+      background: var(--soft);
+    }
+
+    .section-intro {
+      max-width: 760px;
+      color: var(--muted);
+    }
+
+    .cta-wrap {
+      margin-top: 28px;
+    }
+
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 14px 22px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--navy);
+      color: #fff;
+      font-weight: 700;
+      text-decoration: none;
+      transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+    }
+
+    .cta-button:hover {
+      background: var(--navy-light);
+      transform: translateY(-1px);
+    }
+
+    .problem-grid,
+    .case-grid,
+    .capability-grid,
+    .price-grid,
+    .steps {
+      display: grid;
+      gap: 20px;
+    }
+
+    .problem-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 28px;
+    }
+
+    .case-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 28px;
+    }
+
+    .capability-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 28px;
+    }
+
+    .price-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 28px;
+    }
+
+    .card {
+      min-width: 0;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(23, 50, 77, 0.04);
+    }
+
+    .problem-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 16px 18px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .problem-item::before {
+      content: "✓";
+      flex: 0 0 auto;
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .before-after {
+      margin-top: 18px;
+    }
+
+    .label {
+      display: inline-block;
+      margin-bottom: 8px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--navy);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .point {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .note {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .question-box {
+      margin-top: 28px;
+      padding: 24px;
+      border: 2px solid var(--navy);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .question-box pre {
+      width: 100%;
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font: inherit;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .copy-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    .copy-button {
+      min-height: 46px;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .copy-status {
+      min-height: 1.6em;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .copy-help {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .steps {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      margin-top: 28px;
+    }
+
+    .step {
+      position: relative;
+      padding: 22px 18px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .step-number {
+      display: inline-flex;
+      width: 34px;
+      height: 34px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .price-card {
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .price {
+      display: block;
+      margin: 10px 0;
+      color: var(--navy);
+      font-size: 1.45rem;
+      font-weight: 800;
+    }
+
+    .price-link {
+      display: inline-block;
+      margin-top: 8px;
+      font-weight: 700;
+    }
+
+    .faq {
+      border-top: 1px solid var(--border);
+    }
+
+    .faq-item {
+      padding: 22px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .faq-question {
+      margin-bottom: 8px;
+      color: var(--navy);
+      font-weight: 800;
+    }
+
+    .operator-box {
+      max-width: 720px;
+      padding: 24px;
+      border-left: 5px solid var(--accent);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .final-cta {
+      text-align: center;
+    }
+
+    .final-cta p {
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    footer {
+      padding: 28px 0;
+      border-top: 1px solid var(--border);
+      background: #fff;
+      color: var(--muted);
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    @media (max-width: 900px) {
+      .hero-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .case-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .steps {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        font-size: 16px;
+      }
+
+      .container {
+        width: min(100% - 24px, 1100px);
+      }
+
+      .hero,
+      section {
+        padding-top: 48px;
+        padding-bottom: 48px;
+      }
+
+      .problem-grid,
+      .capability-grid,
+      .price-grid,
+      .steps {
+        grid-template-columns: 1fr;
+      }
+
+      .card,
+      .question-box,
+      .price-card,
+      .operator-box,
+      .hero-card {
+        padding: 20px;
+      }
+
+      .cta-button {
+        width: 100%;
+      }
+
+      .copy-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="container hero-inner">
+      <div>
+        <span class="eyebrow">Excel業務の修正・自動化</span>
+        <h1>毎日のExcel作業、<br>「仕方ない」で続けていませんか？</h1>
+
+        <p class="lead">
+          月次集計。CSVの取り込み。帳票への転記。昨日まで動いていたマクロのエラー。
+        </p>
+
+        <p>
+          小さく見える作業でも、毎週・毎月くり返せば負担は積み重なります。
+          mars worksでは、今あるExcelを確認しながら、
+          壊れた部分だけ直す、繰り返し作業だけ自動化する、
+          部署単位の手作業をまとめて見直すなど、
+          必要な範囲に合わせて対応します。
+        </p>
+
+        <p>
+          最初から大きな仕組みにする必要はありません。
+          まずは3問だけで、どの進め方が合いそうか整理します。
+        </p>
+
+        <div class="cta-wrap">
+          <a
+            class="cta-button"
+            href="https://coconala.com/services/4414912"
+            target="_blank"
+            rel="noopener"
+          >
+            無料で相談する（3問だけ）
+          </a>
+        </div>
+      </div>
+
+      <aside class="hero-card" aria-label="対応方針">
+        <strong>直すだけ？自動化する？</strong>
+        <p>
+          修正だけで済むのか、定型作業を自動化した方がよいのか、
+          広い範囲を見直す必要があるのか。
+          今の状態を確認してから切り分けます。
+        </p>
+      </aside>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="container">
+        <h2>こんなExcelの困りごとはありませんか？</h2>
+
+        <div class="problem-grid">
+          <div class="problem-item">毎月同じ集計を手作業でくり返している</div>
+          <div class="problem-item">前任者が作ったマクロが突然動かなくなった</div>
+          <div class="problem-item">CSVを毎回コピー＆ペーストしている</div>
+          <div class="problem-item">担当者のPCでしか動かない</div>
+          <div class="problem-item">複数のExcelから数字を集めている</div>
+          <div class="problem-item">帳票から一覧へ何度も転記している</div>
+          <div class="problem-item">何を頼めばよいか分からない</div>
+        </div>
+
+        <p class="note">
+          最初から大きなシステムを作る必要はありません。
+          修正で済むのか、定型作業の自動化が合うのか、
+          もう少し広い業務改善が必要なのかを切り分けます。
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2>Before → After</h2>
+
+        <div class="case-grid">
+          <article class="card">
+            <h3>1. 月次集計が年の途中から動かない</h3>
+
+            <div class="before-after">
+              <span class="label">Before</span>
+              <p>
+                シートを番号で指定しているため、
+                シートを追加したり並べ替えたりすると
+                別のシートを参照してしまう状態。
+              </p>
+            </div>
+
+            <div class="before-after">
+              <span class="label">After</span>
+              <p>
+                必要なシートをシート名で確認して処理する方式へ見直します。
+              </p>
+            </div>
+
+            <p class="point">
+              <strong>ポイント：</strong>
+              全部を作り直さず、壊れやすい原因だけを見直す方法もあります。
+            </p>
+          </article>
+
+          <article class="card">
+            <h3>2. CSV取込が担当者のPCでしか動かない</h3>
+
+            <div class="before-after">
+              <span class="label">Before</span>
+              <p>
+                CSVの保存場所がプログラム内で固定されており、
+                別のPCでは同じ場所が存在せず動かない状態。
+              </p>
+            </div>
+
+            <div class="before-after">
+              <span class="label">After</span>
+              <p>
+                処理するときに、その都度対象ファイルを選ぶ方式へ変更します。
+              </p>
+            </div>
+
+            <p class="point">
+              <strong>ポイント：</strong>
+              環境依存の設定が残っていることで、
+              担当者やPCが変わると動かなくなる場合があります。
+            </p>
+          </article>
+
+          <article class="card">
+            <h3>3. 定型帳票からの手作業転記</h3>
+
+            <div class="before-after">
+              <span class="label">Before</span>
+              <p>
+                帳票を確認しながら、必要な項目を一覧表へ1行ずつ転記。
+              </p>
+            </div>
+
+            <div class="before-after">
+              <span class="label">After</span>
+              <p>
+                帳票から必要な情報を読み取り、
+                Excelの一覧へ1行ずつ追加する処理を検討します。
+              </p>
+            </div>
+
+            <p class="point">
+              <strong>ポイント：</strong>
+              同じ場所から同じ項目を写す仕事は、
+              自動化を検討しやすい作業のひとつです。
+            </p>
+          </article>
+        </div>
+
+        <p class="note">
+          ※3例は業務上よくある状況をもとにした説明用の事例で、
+          実在の企業・お客様の事例ではありません。
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2>できること／できないこと</h2>
+
+        <div class="capability-grid">
+          <div class="card">
+            <h3>できること</h3>
+            <ul>
+              <li>既存Excelマクロの修正</li>
+              <li>繰り返し作業の自動化</li>
+              <li>CSVの取込・結合・整理</li>
+              <li>Excel間の転記</li>
+              <li>帳票・一覧表作成の自動化</li>
+              <li>既存処理の見直し</li>
+              <li>複数作業をまとめた業務改善</li>
+              <li>ExcelからGoogleスプレッドシート環境への移行相談</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>できないこと・個別確認が必要なこと</h3>
+            <ul>
+              <li>人の判断そのもの</li>
+              <li>元データの形式が毎回大きく変わる処理</li>
+              <li>仕様未定の大規模開発</li>
+              <li>外部システム連携（標準範囲外・個別に可否確認）</li>
+              <li>環境や権限が確認できない処理</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2>まずは3問だけ教えてください</h2>
+
+        <p class="section-intro">
+          相談前に、次の3点を整理しておくと、
+          修正だけでよいのか、一部を自動化するのか、
+          業務全体を見直した方がよいのかを判断しやすくなります。
+        </p>
+
+        <div class="question-box">
+          <pre id="questionText" tabindex="-1">① 毎月・毎週どんなExcel作業に時間を取られていますか？
+
+回答：
+
+② その困りごとは、次のどれに近いですか？
+・単発の不具合
+・繰り返しの定型作業
+・複数工程の複雑な処理
+
+回答：
+
+③ いつまでに対応してほしいですか？
+
+回答：</pre>
+
+          <div class="copy-row">
+            <button
+              class="copy-button"
+              id="copyButton"
+              type="button"
+            >
+              質問をコピー
+            </button>
+
+            <span
+              id="copyStatus"
+              class="copy-status"
+              role="status"
+              aria-live="polite"
+            ></span>
+          </div>
+
+          <p class="copy-help">
+            ココナラの見積相談の欄に貼って、答えを書き込んでください。
+          </p>
+        </div>
+
+        <div class="cta-wrap">
+          <a
+            class="cta-button"
+            href="https://coconala.com/services/4414912"
+            target="_blank"
+            rel="noopener"
+          >
+            無料で相談する（3問だけ）
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2>ご相談から納品まで</h2>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <h3>3問の無料診断</h3>
+            <p>
+              現在の作業内容、困りごとの種類、希望時期を確認します。
+            </p>
+          </div>
+
+          <div class="step">
+            <div class="step-number">2</div>
+            <h3>対応方法のご提案</h3>
+            <p>
+              修正で済むのか、自動化した方がよいのかを整理します。
+            </p>
+          </div>
+
+          <div class="step">
+            <div class="step-number">3</div>
+            <h3>お見積り</h3>
+            <p>
+              対応範囲を確認し、金額と納期をご案内します。
+              問題がなければ作業を開始します。
+            </p>
+          </div>
+
+          <div class="step">
+            <div class="step-number">4</div>
+            <h3>制作・確認</h3>
+            <p>
+              利用環境やサンプルデータを確認しながら制作します。
+            </p>
+          </div>
+
+          <div class="step">
+            <div class="step-number">5</div>
+            <h3>納品・調整</h3>
+            <p>
+              完成したファイルや処理をご確認いただき、
+              必要な調整を行います。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2>料金の目安（税抜）</h2>
+
+        <p class="section-intro">
+          実際の料金は、対象ファイル・処理内容・成果物・納期を確認したうえでお見積りします。
+        </p>
+
+        <div class="price-grid">
+          <div class="price-card">
+            <h3>小さな修正・入口対応</h3>
+            <span class="price">3,000円〜</span>
+            <a
+              class="price-link"
+              href="https://coconala.com/services/4412438"
+              target="_blank"
+              rel="noopener"
+            >
+              小さな修正はこちら
+            </a>
+          </div>
+
+          <div class="price-card">
+            <h3>個別のExcel自動化</h3>
+            <span class="price">30,000円〜</span>
+          </div>
+
+          <div class="price-card">
+            <h3>複数工程を含む業務改善</h3>
+            <span class="price">50,000円〜</span>
+          </div>
+
+          <div class="price-card">
+            <h3>より広い範囲の自動化</h3>
+            <span class="price">80,000円〜</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2>よくある質問</h2>
+
+        <div class="faq">
+          <div class="faq-item">
+            <p class="faq-question">Q1. 今のExcelをそのまま見てもらえますか？</p>
+            <p>
+              はい。現在のファイルを確認し、
+              必要な範囲だけを修正する方法も検討します。
+            </p>
+          </div>
+
+          <div class="faq-item">
+            <p class="faq-question">Q2. 何を自動化すればよいか分かりません。</p>
+            <p>
+              3問の無料診断で状況を整理し、
+              修正・自動化・個別開発のどれが適しているかをご提案します。
+            </p>
+          </div>
+
+          <div class="faq-item">
+            <p class="faq-question">Q3. 小さな修正だけでも相談できますか？</p>
+            <p>
+              はい。既存マクロの不具合など、小さな修正からご相談いただけます。
+            </p>
+          </div>
+
+          <div class="faq-item">
+            <p class="faq-question">Q4. 外部システムとの連携もできますか？</p>
+            <p>
+              標準対応の範囲外です。
+              連携先や仕様などを確認し、個別に可否を判断します。
+            </p>
+          </div>
+
+          <div class="faq-item">
+            <p class="faq-question">Q5. 納期はどのくらいですか？</p>
+            <p>
+              内容によって異なります。
+              3問の無料診断と対象内容の確認後に、目安をご案内します。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2>運営者について</h2>
+
+        <div class="operator-box">
+          <p><strong>mars works</strong></p>
+          <p>IT歴18年</p>
+          <p>
+            Excel VBA・Googleスプレッドシート（GAS）の自動化に対応しています。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container final-cta">
+        <h2>Excelの「面倒」「壊れた」「毎回同じ」を、一度整理してみませんか？</h2>
+
+        <p>
+          「これって自動化できる？」
+          「全部作り直す必要がある？」
+          「小さな修正だけお願いしたい」
+          という段階でも構いません。
+        </p>
+
+        <p>
+          何を頼めばよいか決まっていなくても、
+          まず3問から整理できます。
+        </p>
+
+        <div class="cta-wrap">
+          <a
+            class="cta-button"
+            href="https://coconala.com/services/4414912"
+            target="_blank"
+            rel="noopener"
+          >
+            無料で相談する（3問だけ）
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      © mars works
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const copyButton = document.getElementById("copyButton");
+      const questionText = document.getElementById("questionText");
+      const copyStatus = document.getElementById("copyStatus");
+
+      let statusTimer = null;
+
+      function showStatus(message, duration) {
+        window.clearTimeout(statusTimer);
+        copyStatus.textContent = message;
+
+        if (duration) {
+          statusTimer = window.setTimeout(function () {
+            copyStatus.textContent = "";
+          }, duration);
+        }
+      }
+
+      function selectQuestionText() {
+        const selection = window.getSelection();
+        const range = document.createRange();
+
+        range.selectNodeContents(questionText);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        questionText.focus();
+      }
+
+      async function copyQuestions() {
+        const text = questionText.textContent.trim();
+
+        if (
+          navigator.clipboard &&
+          typeof navigator.clipboard.writeText === "function"
+        ) {
+          try {
+            await navigator.clipboard.writeText(text);
+            showStatus("コピーしました", 2000);
+            return;
+          } catch (error) {
+            selectQuestionText();
+            showStatus(
+              "長押し/右クリックでコピーしてください"
+            );
+            return;
+          }
+        }
+
+        selectQuestionText();
+        showStatus(
+          "長押し/右クリックでコピーしてください"
+        );
+      }
+
+      copyButton.addEventListener("click", copyQuestions);
+    })();
+  </script>
+</body>
+</html>
